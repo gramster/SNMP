@@ -168,7 +168,10 @@ class Command
     TextEditor *ed;
     int oldr, oldc;
   public:
-    Command(TextEditor *ed_in);
+    Command(TextEditor *ed_in)
+    	: next(0), prev(0), ed(ed_in),
+	  oldr(ed_in->Line()), oldc(ed_in->Column())
+    { }
     Command *Next()
     {
         return next;
@@ -201,14 +204,56 @@ class CommandHistory
     CommandHistory()
         : head(0), tail(0), now(0)
     { }
-    void Undo();
-    void Redo();
-    void DeleteList();
-    void Record(Command *n);
+    void Undo()
+    {
+        if (now)
+	{
+	    now->Undo();
+            now = now->Prev();
+	}
+    }
+    void Redo()
+    {
+        if (now->Next())
+	{
+            now = now->Next();
+	    now->Do();
+	}
+    }
+    void DeleteList()
+    {
+        if (now) 
+	{
+	    tail = now->Prev();
+	    if (tail) tail->Next(0);
+            while (now)
+	    {
+	        Command *tmp = now;
+                now = now->Next();
+		delete tmp;
+	    } 
+	    now = tail;
+	}
+    }
     ~CommandHistory()
     {
         now = head;
 	DeleteList();
+    }
+    void Record(Command *n)
+    {
+        if (now && now->Next())
+	{
+	    now = now->Next();
+	    DeleteList();
+	}
+	if (now)
+	{
+	    now->Next(n);
+	    n->Prev(now)
+	    now = tail = n;
+	}
+	else head = tail = now = n;
     }
 };
 
@@ -345,7 +390,7 @@ public:
 	else
 	    GotoColAbs(0);
     }		
-    void End()
+    void End	()
     {
 	GotoColAbs(line->Length());
     }
@@ -436,7 +481,7 @@ class InsertCommand : public Command
     { }
 };
 
-class DeleteCharCommand : public Command
+class DeleteCharCommand
 {
   protected:
     int ch;
@@ -449,21 +494,16 @@ class DeleteCharCommand : public Command
     {
         ed->InsertChar(ch);
     }
-    ~DeleteCharCommand()
+    ~InsertCommand()
     { }
 };
 
-class DeleteLineCommand : public Command
+class DeleteLineCommand
 {
 };
-
-class BackspaceCommand: public DeleteCharCommand
-{
-};
-
-class DeleteCommand: public DeleteCharCommand
-{
-};
+    case KB_BACKSPACE:		Backspace();	break;
+    case KB_DELETE:		Delete();	break;
+    case 25:			DeleteLine();	break; // ^Y
 
 #endif /* __ED_H */
 

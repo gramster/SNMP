@@ -7,6 +7,10 @@
 // been used to build text editors under MS-DOS, Windows 3.1, and UNIX
 // systems. Originally written for the SDL*Design tool.
 //
+// This version has been pruned down. Multi-window support, block
+// operations, language syntax formatting (Windows only), and undo/
+// redo have been removed.
+//
 // TODO: replace the asserts with better error handling
 
 #include <stdio.h>
@@ -739,63 +743,4 @@ void TextEditor::Dump()
 	buffer->Dump();
 }
 
-//---------------------------------------------------------------------
-
-void CommandHistory::Undo()
-{
-    if (now)
-    {
-        now->Undo();
-        now = now->Prev();
-    }
-}
-
-void CommandHistory::Redo()
-{
-    if (now->Next())
-    {
-        now = now->Next();
-        now->Do();
-    }
-}
-
-void CommandHistory::DeleteList()
-{
-    if (now) 
-    {
-        tail = now->Prev();
-        if (tail) tail->Next(0);
-        while (now)
-        {
-            Command *tmp = now;
-            now = now->Next();
-	    delete tmp;
-        } 
-        now = tail;
-    }
-}
-
-void CommandHistory::Record(Command *n)
-{
-    if (now && now->Next())
-    {
-        now = now->Next();
-        DeleteList();
-    }
-    if (now)
-    {
-        now->Next(n);
-        n->Prev(now)
-        now = tail = n;
-    }
-    else head = tail = now = n;
-}
-
-//--------------------------------------------------------------------
-
-Command::Command(TextEditor *ed_in)
-    : next(0), prev(0), ed(ed_in),
-      oldr(ed_in->Line()), oldc(ed_in->Column())
-{ 
-}
 

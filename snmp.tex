@@ -1,0 +1,81 @@
+\documentstyle[a4]{article}
+\begin{document}
+
+\section{The MIB Database}
+
+The compiler creates a special flat file respresntation of the compiled
+MIBs upon completion. This file is read by the MIB tree class upon 
+instantiation. The file format has been designed to support both 
+SNMPv1 and SNMPv2 SMI.
+
+The file consists of a sequence of records with colon-separated fields.
+Comments lines can be included by starting the comment line with a hash
+character in the first column. Each record should appear on a single line,
+or on multiple lines with each line but the last terminated with a 
+backslash character. When reading the file, backslashes are removed
+except in the description field where they are converted to newline
+characters. Trailing fields which are not required or applicable
+may be omitted.
+
+Each record consists of the following fields:
+
+\begin{itemize}
+\item the name of the object.
+\item the full object identifier of the object described by the record.
+An object is either an object-identifier node (e.g. iso(1)) or an
+object type node (e.g. ifTable(2)). In the former case, all of the
+remaining fields are omitted.
+\item the base type of the object. This is identified using one of the
+following codes:
+\begin{itemize}
+\item T - table (i.e. sequence of);
+\item t - table entry (i.e. sequence);
+\item n - null;
+\item o - octet string;
+\item i - integer;
+\item en - enumerated integer;
+\item bs - bit string;
+\item oi - object identifier;
+\item na - network address;
+\item ip - IP address;
+\ite ns - NSAP address;
+\item u32 - 32-bit unsigned integer;
+\item c32 - 32-bit unsigned counter;
+\item c64 - 64-bit unsigned counter;
+\item g64 - 64-bit unsigned gauge;
+\item g32 - 32-bit unsigned gauge;
+\item tt - time ticks;
+\item oq - opaque;
+\end{itemize}
+\item the accessibility of the object, indicated by one of the codes:
+\begin{itemize}
+\item n - no access;
+\item r - read only;
+\item rw - read/write;
+\item w - write only;
+\item rc - read/create.
+\end{itemize}
+\item the status of the object, indicated by one of the codes:
+\begin{itemize}
+\item c - current;
+\item d - deprecated;
+\item ob - obsolete;
+\item m - mandatory;
+\item op - optional.
+\end{itemize}
+\item supplementary information, which varies with the object type.
+This can be:
+\begin{itemize}
+\item a list of table indices for tables;
+\item a list of symbolic values ((name,value) pairs) for enumerations
+and bits strings;
+\item a minimum and maximum value for other integer-based types;
+\item a minimum and maximum length for string-based types.
+\end{itemize}
+\item the description of the object.
+\item the default value of the object;
+\item the units used by the object;
+\end{itemize}
+
+\end{document}
+

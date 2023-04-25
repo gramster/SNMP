@@ -1,0 +1,71 @@
+Fix enumerations
+Handle paging of long descriptions
+Table instance value sets.
+
+Note the split between server (agent or proxy) and client (manager)
+
+Server:
+    Needn't compile MIB
+    Declare managed vars with classes representing types. Each
+    var instance has an associated objid string. The current 
+    asn1obj.h/cc classes can be used as the basis.
+    These should be held in a tree, or a hash table (hashing objid's)
+	could be used. The hashing approach is more general and
+	more efficient for sparse trees. 
+	For each class we need get/set methods, which return or take
+	a BER encoding of a value of the associated type.
+	We then need tree-level get/set routines, which take an 
+	object ID argument identifying the instance as well (the hash key).
+	Furthermore, the classes must support rollback/commit on
+	get/set operations.
+
+Client:
+    Provides get/set routines as for server. The args are just used
+    to encode the get/set request PDU's to send to the server.
+    Use MIB to determine how to decode and display get responses.
+
+Split the asn1tree classes into type nodes and value nodes. Type
+nodes are set up by the compiler, and include a pointer to the
+BER class (these classes should have their value fields removed).
+Value nodes hold values and have encode/decode routines that use
+the parent type node's BER class. Possibly only agents will
+create value nodes. If the manager has value nodes, these could
+be extended to include poll actions, threshold filters, etc.
+
+Add third node class for object ID nodes (object-typ class inherits
+this, adding syntax).
+
+The compiler should postprocess stab as follows:
+
+for each elt:
+	if an object typ, make object typ node
+	else if fundamental type, get fundamental syntax
+	else create derived syntax for type
+
+(based on assumption that MIB contains typesand values, and
+MIB values are all object IDs)
+
+Change error class to log trace
+Test imports/exports
+Implement and test MIB tree gets/sets
+Implement SNMP client/server.
+Implement MIB browser
+Implement SMUX client/server.
+Check that it works with RMON
+Implement SNMP-2 extensions
+Design and build net manager
+Check performance, esp of symbol table.
+
+Manager Wish List
+
+* map hierarchy and editor
+* auto-scan network
+* traceroute and ping
+* configureable views which can be associated with tables or variables
+	(e.g. stripchart, barchart, table, ...)
+* execution of scripts (Tcl?) upon alarms, plus some basic actions
+* MIB browser
+* detection of fluctuations in variables or expressions - variance
+	from steady state, min/max threshholds, etc
+
+
